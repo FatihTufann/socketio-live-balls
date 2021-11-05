@@ -11,6 +11,19 @@ app.controller('indexController', ['$scope', 'indexFactory', ($scope, indexFacto
       else
           return false;
     };
+    function scrollTop() {
+        setTimeout(() => {
+            const element = document.getElementById('chat-area');
+            element.scrollTop = element.scrollHeight;
+        });
+    }
+
+    function showBubble(id, message) {
+        $('#'+ id).find('.message').show().html(message);
+        setTimeout(() => {
+           $('#'+ id).find('.message').hide();
+        }, 2000);
+    };
 
     function initSocket(username){
         const connectionsOptions = {
@@ -37,6 +50,7 @@ app.controller('indexController', ['$scope', 'indexFactory', ($scope, indexFacto
 
                     $scope.messages.push(messageData);
                     $scope.players[data.id] = data;
+                    scrollTop();
                     $scope.$apply();
                 });
 
@@ -51,6 +65,7 @@ app.controller('indexController', ['$scope', 'indexFactory', ($scope, indexFacto
                    console.log(user);
                    $scope.messages.push(messageData);
                    delete $scope.players[user.id];
+                   scrollTop();
                    $scope.$apply();
                 });
 
@@ -58,6 +73,13 @@ app.controller('indexController', ['$scope', 'indexFactory', ($scope, indexFacto
                     $('#'+ data.socketId).animate({ 'left': data.x, 'top': data.y}, () => {
                         animate = false;
                     });
+                });
+
+                socket.on('newMessage', (message) => {
+                    $scope.messages.push(message);
+                    $scope.$apply();
+                    showBubble(message.socketId, message.text);
+                    scrollTop();
                 });
 
                 let animate = false;
@@ -72,8 +94,25 @@ app.controller('indexController', ['$scope', 'indexFactory', ($scope, indexFacto
                             animate = false;
                         });
                     }
+                };
 
+                $scope.newMessage = () => {
+                    let message = $scope.message;
 
+                    const messageData = {
+                        type: {
+                            code: 1
+                        },
+                        username: username,
+                        text: message
+                    };
+
+                    $scope.messages.push(messageData);
+                    $scope.message = '';
+
+                    socket.emit('newMessage', messageData);
+                    showBubble(socket.id, message);
+                    scrollTop();
                 };
 
             }).catch((err) => {
