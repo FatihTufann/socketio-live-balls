@@ -8,6 +8,7 @@
   "license": "MIT",
   "homepage": "https://github.com/FatihTufann/socketio-live-balls",
   "dependencies": {
-    "angular": "^1.8.2"
+    "angular": "^1.8.2",
+    "jquery": "^3.6.0"
   }
 }
